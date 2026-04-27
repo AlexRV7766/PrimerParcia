@@ -10,5 +10,5 @@ export interface UsuarioResponse {
   nombre: string;
   email: string;
   telefono: string;
-  rol: string;
+  rol: boolean;
 }
