@@ -28,7 +28,7 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="admin@gmail.com",
         nombre="Administrador",
-        password="123456",
+        password=hash_password(123456),
         rol="administrador"
     )
 
@@ -36,7 +36,7 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="user@gmail.com",
         nombre="Cliente Demo",
-        password="123456",
+        password=hash_password(123456),
         rol="cliente"
     )
 
@@ -44,7 +44,7 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="taller@gmail.com",
         nombre="Taller Demo",
-        password="123456",
+        password=hash_password(123456),
         rol="taller"
     )
 
@@ -52,6 +52,6 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="tecnico@gmail.com",
         nombre="Técnico Demo",
-        password="123456",
+        password=hash_password(123456),
         rol="tecnico"
     )
