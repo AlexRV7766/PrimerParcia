@@ -2,6 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.core.database import SessionLocal
+from app.core.init_data import crear_usuarios_iniciales
+
 # Inicializa la configuración de Cloudinary
 import app.core.cloudinary_config
 
@@ -24,11 +27,19 @@ app = FastAPI(title="Emergencias Viales API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def startup_event():
+    db = SessionLocal()
+    try:
+        crear_usuarios_iniciales(db)
+    finally:
+        db.close()
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -49,4 +60,4 @@ app.include_router(historial.router)
 app.include_router(dispositivo.router)
 app.include_router(notificacion.router)
 app.include_router(pago.router)
-
+

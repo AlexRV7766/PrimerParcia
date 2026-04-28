@@ -42,9 +42,29 @@ def obtener(taller_id: int, db: Session = Depends(get_db)):
 def crear(
     data: TallerCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_roles("administrador"))
+    current_user: Usuario = Depends(require_roles("taller"))
 ):
-    return crear_taller(db, data)
+    #Verificar si ya tiene taller
+    existente = db.query(Taller).filter(Taller.usuario_id == current_user.id).first()
+    if existente:
+        raise HTTPException(status_code=400, detail="Ya tienes un taller registrado")
+
+    nuevo = Taller(
+        nombre=data.nombre,
+        email=data.email,
+        telefono=data.telefono,
+        direccion=data.direccion,
+        latitud=data.latitud,
+        longitud=data.longitud,
+        activo=True,
+        usuario_id=current_user.id
+    )
+
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+
+    return nuevo
 
 
 # ── ADMIN: Eliminar taller ────────────────────────────────────────────────────
@@ -89,4 +109,4 @@ def actualizar(
 
     db.commit()
     db.refresh(taller)
-    return taller
+    return taller

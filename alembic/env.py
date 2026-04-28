@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from app.core.database import Base
-
+from app.models import *
 from decouple import config
 
 DATABASE_URL = config("DATABASE_URL")

@@ -10,64 +10,89 @@ import { TallerResponse } from '../../../core/models/taller.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NavbarComponent],
   template: `
-    <app-navbar />
-    <div class="page">
-      <div class="page-header">
-        <h1 class="page-title"><span class="material-icons-outlined">storefront</span> Mi Taller</h1>
-        <p class="page-subtitle">Actualiza la información de tu negocio</p>
-      </div>
-
-      @if (mensaje) { <div class="alert alert-success">{{ mensaje }}</div> }
-      @if (error)   { <div class="alert alert-error">{{ error }}</div> }
-
-      @if (loading) {
-        <div class="loading">Cargando...</div>
-      } @else if (taller) {
-        <div class="form-card">
-          <form [formGroup]="form" (ngSubmit)="guardar()" class="form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Nombre del Taller</label>
-                <input type="text" formControlName="nombre">
-              </div>
-              <div class="form-group">
-                <label>Email</label>
-                <input type="email" formControlName="email">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Teléfono</label>
-                <input type="text" formControlName="telefono">
-              </div>
-              <div class="form-group">
-                <label>Dirección</label>
-                <input type="text" formControlName="direccion">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Latitud</label>
-                <input type="number" step="any" formControlName="latitud">
-              </div>
-              <div class="form-group">
-                <label>Longitud</label>
-                <input type="number" step="any" formControlName="longitud">
-              </div>
-            </div>
-            <div class="form-group" style="flex-direction:row; align-items:center;">
-              <input type="checkbox" formControlName="activo" id="activo" style="width:auto">
-              <label for="activo" style="margin-left:0.5rem">Taller Activo (Visible para asignaciones)</label>
-            </div>
-            
-            <button type="submit" class="btn btn-green" [disabled]="form.invalid">
-              <span class="material-icons-outlined">save</span> Guardar Cambios
-            </button>
-          </form>
-        </div>
-      }
+  <app-navbar />
+  <div class="page">
+    <div class="page-header">
+      <h1 class="page-title">
+        <span class="material-icons-outlined">storefront</span>
+        {{ taller ? 'Mi Taller' : 'Registrar Taller' }}
+      </h1>
+      <p class="page-subtitle">
+        {{ taller ? 'Actualiza la información de tu negocio' : 'Completa los datos para crear tu taller' }}
+      </p>
     </div>
-  `,
+
+    @if (mensaje) { <div class="alert alert-success">{{ mensaje }}</div> }
+    @if (error)   { <div class="alert alert-error">{{ error }}</div> }
+
+    @if (loading) {
+      <div class="loading">Cargando...</div>
+    } @else {
+
+      @if (!taller) {
+        <p class="page-subtitle" style="margin-bottom:1rem;">
+          Aún no tienes un taller registrado.
+        </p>
+      }
+
+      <div class="form-card">
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="form">
+
+          <!-- FILA 1 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre del Taller</label>
+              <input type="text" formControlName="nombre">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" formControlName="email">
+            </div>
+          </div>
+
+          <!-- FILA 2 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Teléfono</label>
+              <input type="text" formControlName="telefono">
+            </div>
+            <div class="form-group">
+              <label>Dirección</label>
+              <input type="text" formControlName="direccion">
+            </div>
+          </div>
+
+          <!-- FILA 3 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitud</label>
+              <input type="number" step="any" formControlName="latitud">
+            </div>
+            <div class="form-group">
+              <label>Longitud</label>
+              <input type="number" step="any" formControlName="longitud">
+            </div>
+          </div>
+
+          <!-- ACTIVO -->
+          <div class="form-group" style="flex-direction:row; align-items:center;">
+            <input type="checkbox" formControlName="activo" id="activo" style="width:auto">
+            <label for="activo" style="margin-left:0.5rem">
+              Taller Activo
+            </label>
+          </div>
+
+          <!-- BOTÓN -->
+          <button type="submit" class="btn btn-green" [disabled]="form.invalid">
+            <span class="material-icons-outlined">save</span>
+            {{ taller ? 'Guardar Cambios' : 'Crear Taller' }}
+          </button>
+
+        </form>
+      </div>
+    }
+  </div>
+`,
   styles: [`
     .page { padding: 2rem; max-width: 800px; margin: 0 auto; }
     .page-header { margin-bottom: 2rem; }
@@ -112,6 +137,8 @@ export class TallerPerfilComponent implements OnInit {
 
   cargar() {
     this.loading = true;
+    this.error = '';
+
     this.tallerService.miTaller().subscribe({
       next: (data) => {
         this.taller = data;
@@ -119,23 +146,41 @@ export class TallerPerfilComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.error = 'No se pudo cargar la información de tu taller.';
+        this.taller = null;
         this.loading = false;
       }
     });
   }
 
   guardar() {
-    if (this.form.invalid || !this.taller) return;
+    if (this.form.invalid) return;
+
     const v = this.form.value as TallerUpdate;
-    this.tallerService.actualizar(this.taller.id, v).subscribe({
-      next: () => {
-        this.mensaje = 'Información actualizada correctamente.';
-        setTimeout(() => this.mensaje = '', 3000);
-      },
-      error: (e) => {
-        this.error = e.error?.detail || 'Error al actualizar el taller.';
-      }
-    });
+    this.mensaje = '';
+    this.error = '';
+
+    if (this.taller) {
+      //ACTUALIZAR
+      this.tallerService.actualizar(this.taller.id, v).subscribe({
+        next: () => {
+          this.mensaje = 'Taller actualizado correctamente';
+        },
+        error: (e) => {
+          this.error = e.error?.detail || 'Error al actualizar';
+        }
+      });
+
+    } else {
+      //CREAR
+      this.tallerService.crear(v).subscribe({
+        next: (data) => {
+          this.mensaje = 'Taller creado correctamente';
+          this.taller = data;
+        },
+        error: (e) => {
+          this.error = e.error?.detail || 'Error al crear taller';
+        }
+      });
+    }
   }
 }
