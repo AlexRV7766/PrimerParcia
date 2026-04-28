@@ -16,4 +16,4 @@ def login(datos: LoginRequest, db: Session = Depends(get_db)):
     if resultado == "INVALID_PASSWORD":
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
-    return {"access_token": resultado}
+    return resultado

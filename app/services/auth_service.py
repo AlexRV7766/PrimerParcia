@@ -10,5 +10,21 @@ def autenticar_usuario(db, email, password):
     if not verify_password(password, user.password):
         return "INVALID_PASSWORD"
 
-    token = create_access_token({"sub": user.email})
-    return token
+    token = create_access_token({
+        "sub": user.email,
+        "rol": user.rol,
+        "email": user.email,
+        "user_id": user.id
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "usuario": {
+            "id": user.id,
+            "nombre": user.nombre,
+            "email": user.email,
+            "rol": user.rol,
+            "activo": user.activo
+        }
+    }
