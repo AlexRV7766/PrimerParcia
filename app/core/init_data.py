@@ -6,7 +6,11 @@ def crear_usuario_si_no_existe(db: Session, email, nombre, password, rol):
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
 
     if usuario:
-        print(f"⚠️ {rol} ya existe: {email}")
+        usuario.password = hash_password(password)
+        usuario.rol = rol
+        usuario.activo = True
+        db.commit()
+        print(f"♻️ {rol.upper()} actualizado: {email} / {password}")
         return
 
     nuevo = Usuario(
@@ -20,7 +24,7 @@ def crear_usuario_si_no_existe(db: Session, email, nombre, password, rol):
 
     db.add(nuevo)
     db.commit()
-    print(f"✅ {rol.upper()} creado: {email}")
+    print(f"✅ {rol.upper()} creado: {email} / {password}")
 
 
 def crear_usuarios_iniciales(db: Session):
@@ -28,7 +32,7 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="admin@gmail.com",
         nombre="Administrador",
-        password=hash_password("123456"),
+        password="123456",
         rol="administrador"
     )
 
@@ -36,7 +40,7 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="user@gmail.com",
         nombre="Cliente Demo",
-        password=hash_password("123456"),
+        password="123456",
         rol="cliente"
     )
 
@@ -44,7 +48,7 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="taller@gmail.com",
         nombre="Taller Demo",
-        password=hash_password("123456"),
+        password="123456",
         rol="taller"
     )
 
@@ -52,6 +56,6 @@ def crear_usuarios_iniciales(db: Session):
         db,
         email="tecnico@gmail.com",
         nombre="Técnico Demo",
-        password=hash_password("123456"),
+        password="123456",
         rol="tecnico"
     )
